@@ -28,10 +28,17 @@
   video, canvas#overlay{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scaleX(-1)}
   .hint{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:10px; color:#8aa0b6; text-align:center; padding:20px; font-size:13.5px; line-height:1.6}
+  .frameguide{width:min(82%,300px); height:auto}
+  .guidecap{font-size:12px; color:#9fb3c8}
   .vid-badge{position:absolute; top:8px; left:8px; background:rgba(6,18,31,.72); backdrop-filter:blur(4px);
     border:1px solid var(--line); border-radius:12px; padding:6px 12px 8px}
   .vid-badge #vstatus{display:block; font-size:11px; color:var(--orange-soft); font-weight:700; margin-bottom:1px}
   .vid-badge #vtimer{font-family:var(--mono); font-size:34px; font-weight:700; line-height:1; color:#fff}
+  .cam-switch{position:absolute; top:8px; right:8px; width:42px; height:42px; border-radius:50%;
+    border:1px solid var(--line); background:rgba(6,18,31,.72); backdrop-filter:blur(4px);
+    color:#cdd9e6; cursor:pointer; display:none; align-items:center; justify-content:center; padding:0}
+  .cam-switch.show{display:flex}
+  .cam-switch svg{width:22px; height:22px}
 
   .controlrow{flex:0 0 auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap}
   .ctl-label{font-size:12.5px; color:#9fb3c8; font-weight:700; white-space:nowrap}
@@ -90,23 +97,45 @@
     <div class="videowrap">
       <video id="cam" playsinline></video>
       <canvas id="overlay"></canvas>
+      <button class="cam-switch" id="camswitch" title="切換前/後鏡頭" aria-label="切換前後鏡頭">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+      </button>
       <div class="vid-badge" id="badge" style="display:none">
         <span id="vstatus">準備</span>
         <span id="vtimer">00:00</span>
       </div>
       <div class="hint" id="hint">
-        <div style="font-size:30px">🎥</div>
-        <div>選好紀錄時間後按「開始」。<br>鏡頭放<b>安妮另一側、正面對施救者</b>，手機<b>建議橫放</b>。<br>偵測到第一次按壓才開始計時。</div>
+        <div>選好紀錄時間後按「開始」，偵測到第一次按壓才開始計時。<br>鏡頭放<b>安妮另一側、正面對施救者</b>，手機<b>建議橫放</b>。</div>
+        <svg class="frameguide" viewBox="0 0 220 132" fill="none">
+          <rect x="6" y="6" width="208" height="120" rx="12" stroke="var(--orange)" stroke-width="2" stroke-dasharray="7 6"/>
+          <rect x="46" y="92" width="130" height="16" rx="8" fill="rgba(255,255,255,.08)" stroke="var(--muted)" stroke-width="2"/>
+          <circle cx="42" cy="100" r="10" fill="rgba(255,255,255,.08)" stroke="var(--muted)" stroke-width="2"/>
+          <text x="28" y="123" font-size="9" fill="#9fb3c8">安妮</text>
+          <g stroke="var(--orange)" stroke-width="3" stroke-linecap="round">
+            <circle cx="120" cy="30" r="11"/>
+            <line x1="120" y1="41" x2="120" y2="64"/>
+            <line x1="111" y1="47" x2="120" y2="86"/>
+            <line x1="129" y1="47" x2="120" y2="86"/>
+            <line x1="120" y1="64" x2="108" y2="82"/>
+            <line x1="120" y1="64" x2="132" y2="82"/>
+          </g>
+          <circle cx="120" cy="87" r="3.5" fill="var(--orange)"/>
+          <text x="138" y="34" font-size="9" fill="var(--orange-soft)">施救者</text>
+        </svg>
+        <div class="guidecap">把<b>頭部到雙手、左右手臂</b>都放進畫面</div>
       </div>
     </div>
     <div class="controlrow">
       <span class="ctl-label">紀錄時間</span>
       <select id="dur">
-        <option value="1">1 分鐘</option>
+        <option value="1" selected>1 分鐘</option>
         <option value="2">2 分鐘</option>
         <option value="3">3 分鐘</option>
         <option value="5">5 分鐘</option>
-        <option value="0" selected>不限</option>
+        <option value="0">不限</option>
       </select>
       <button id="toggle">開始</button>
       <button id="restart" style="display:none">重新開始</button>
@@ -145,8 +174,8 @@
         <line id="armFigR" x1="32" y1="22" x2="47" y2="58" stroke="var(--idle)" stroke-width="3"/>
         <circle cx="17" cy="58" r="2.6" fill="var(--idle)"/>
         <circle cx="47" cy="58" r="2.6" fill="var(--idle)"/>
-        <text x="13" y="74" font-size="8" fill="#9fb3c8" font-family="sans-serif">左</text>
-        <text x="46" y="74" font-size="8" fill="#9fb3c8" font-family="sans-serif">右</text>
+        <text x="13" y="74" font-size="8" fill="#9fb3c8" font-family="sans-serif">右</text>
+        <text x="46" y="74" font-size="8" fill="#9fb3c8" font-family="sans-serif">左</text>
       </svg>
     </div>
   </div>
@@ -196,9 +225,6 @@
       <div class="rsub">綠＝打直　黃＝彎曲</div>
     </div>
   </div>
-  <div class="note">
-    <b>關於深度：</b>本工具未量測下壓深度（公分）。單一鏡頭無法可靠換算絕對深度，這裡的回彈為相對指標，僅供練習趨勢參考，不可作為認證級量測。需公分數據請搭配 Laerdal QCPR 等感測裝置。
-  </div>
   <button class="btn-again" id="again">再測一次</button>
 </div>
 
@@ -211,11 +237,11 @@
   const cam=$('cam'), overlay=$('overlay'), octx=overlay.getContext('2d'), toggle=$('toggle');
 
   const WIN_MS=2500, MIN_AMP=0.015, ARM_STRAIGHT=160;
-  const GMIN=80, GMAX=160, BLO=100, BHI=120;         // 量程 80–160，綠色正確區 100–120
+  const GMIN=80, GMAX=140, BLO=100, BHI=120;         // 量程 80–140，綠色正確區 100–120
   const GC=(GMIN+GMAX)/2, GH=(GMAX-GMIN)/2;          // 中心 120
 
   let running=false, cameraStarted=false, pose=null, camera=null, timerId=null;
-  let durationMin=0, measureStartT=null;
+  let durationMin=1, measureStartT=null, facing='user';
   let sig=[], comps=[], log=[], state='up', releaseMinY=1;
 
   function angle(a,b,c){
@@ -244,9 +270,9 @@
   }
   function setRecoilFill(f){ const el=$('recoilFill'); fillDiamond(el,f); el.setAttribute('fill', f>=0.85?'var(--good)':'var(--warn)'); }
   function setArms(aL,aR){
-    $('armFigL').setAttribute('stroke',armColor(aL)); $('armFigR').setAttribute('stroke',armColor(aR));
-    $('armFigL').setAttribute('stroke-width',(aL!=null&&aL<ARM_STRAIGHT)?5:3);
-    $('armFigR').setAttribute('stroke-width',(aR!=null&&aR<ARM_STRAIGHT)?5:3);
+    $('armFigL').setAttribute('stroke',armColor(aR)); $('armFigR').setAttribute('stroke',armColor(aL));
+    $('armFigL').setAttribute('stroke-width',(aR!=null&&aR<ARM_STRAIGHT)?5:3);
+    $('armFigR').setAttribute('stroke-width',(aL!=null&&aL<ARM_STRAIGHT)?5:3);
   }
 
   function onResults(res){
@@ -309,16 +335,29 @@
     } else $('vtimer').textContent=fmt(Math.floor(elapsed));
   }
 
+  async function applyCamera(){
+    if(camera){ try{ camera.stop(); }catch(_){} }
+    camera=new Camera(cam,{onFrame:async()=>{await pose.send({image:cam});},width:1280,height:720,facingMode:facing});
+    await camera.start();
+    cam.style.transform='none'; overlay.style.transform='none';   // 不鏡像：畫面即面對操作者的真實左右
+  }
   async function initCamera(){
     if(typeof Pose==='undefined'){ $('hint').innerHTML='⚠️ 無法載入 MediaPipe（網路或 CDN 被擋）。請以 https / localhost 開啟後重試。'; return false; }
     pose=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
     pose.setOptions({modelComplexity:1,smoothLandmarks:true,minDetectionConfidence:.5,minTrackingConfidence:.5});
     pose.onResults(onResults);
-    try{ camera=new Camera(cam,{onFrame:async()=>{await pose.send({image:cam});},width:1280,height:720}); await camera.start(); }
-    catch(e){ $('hint').innerHTML='⚠️ 無法開啟鏡頭。請允許相機權限，並確認以 https 或 localhost 開啟。'; return false; }
     cam.addEventListener('loadedmetadata',()=>{overlay.width=cam.videoWidth;overlay.height=cam.videoHeight;});
+    try{ await applyCamera(); }
+    catch(e){ $('hint').innerHTML='⚠️ 無法開啟鏡頭。請允許相機權限，並確認以 https 或 localhost 開啟。'; return false; }
     overlay.width=cam.videoWidth||1280; overlay.height=cam.videoHeight||720;
-    cameraStarted=true; $('hint').style.display='none'; $('badge').style.display='block'; return true;
+    cameraStarted=true; $('hint').style.display='none'; $('badge').style.display='block'; $('camswitch').classList.add('show'); return true;
+  }
+  async function toggleCamera(){
+    const prev=facing;
+    facing = facing==='user' ? 'environment' : 'user';
+    if(!cameraStarted) return;            // preference stored, applied on start
+    try{ await applyCamera(); }
+    catch(e){ facing=prev; try{ await applyCamera(); }catch(_){} }
   }
 
   function presetBadge(){ $('vstatus').textContent='等待第一次按壓…'; $('vtimer').textContent=durationMin>0?fmt(durationMin*60):'00:00'; }
@@ -377,6 +416,7 @@
   $('dur').addEventListener('change',e=>{ durationMin=parseInt(e.target.value,10)||0; if(cameraStarted&&!running) presetBadge(); });
   toggle.addEventListener('click',()=>{ running?endSession():startSession(); });
   $('restart').addEventListener('click',restartSession);
+  $('camswitch').addEventListener('click',toggleCamera);
   $('again').addEventListener('click',()=>{ $('results').classList.remove('show'); presetBadge(); });
   $('band').setAttribute('d',bandPath()); $('bandR').setAttribute('d',bandPath());
   setRate(null);
