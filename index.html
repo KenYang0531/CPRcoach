@@ -3,83 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
-<title>CPR 即時姿勢分析｜SAVEANNE</title>
+<title>CPR 即時品質分析｜SAVEANNE</title>
 <style>
   :root{
     --navy:#0e2a47; --navy2:#13345a; --ink:#0a1d33;
     --orange:#f47b20; --orange-soft:#ffb877;
     --paper:#f4f1ea; --line:rgba(255,255,255,.10);
-    --good:#3ec97a; --warn:#f5c518; --bad:#ef5350; --idle:#7f93a8; --muted:#6f8398;
+    --good:#3ec97a; --warn:#f5c518; --idle:#7f93a8; --muted:#6f8398;
     --mono:"SFMono-Regular",Consolas,Menlo,monospace;
     --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
-  body{
-    background:var(--ink); color:var(--paper); font-family:var(--sans);
-    overflow:hidden; display:flex; flex-direction:column;
-    background-image:radial-gradient(900px 500px at 80% -10%, rgba(244,123,32,.10), transparent 60%);
-  }
+  body{background:var(--ink); color:var(--paper); font-family:var(--sans); overflow:hidden;
+    display:flex; flex-direction:column;
+    background-image:radial-gradient(900px 500px at 80% -10%, rgba(244,123,32,.10), transparent 60%);}
   .topbar{flex:0 0 auto; display:flex; align-items:baseline; gap:10px; padding:8px 14px}
   .brand{font-weight:800;letter-spacing:.5px;font-size:11px;color:var(--orange);text-transform:uppercase}
-  .topbar h1{font-size:15px;font-weight:800}
-  .topbar .tag{margin-left:auto;font-size:10.5px;color:#7f93a8}
+  .topbar h1{font-size:16px;font-weight:800}
 
-  /* live screen */
   .live{flex:1 1 auto; display:flex; gap:12px; padding:0 14px 12px; min-height:0}
   .leftcol{flex:1 1 auto; display:flex; flex-direction:column; gap:10px; min-width:0}
   .videowrap{flex:1 1 auto; position:relative; border-radius:14px; overflow:hidden; background:#06121f; min-height:0; border:1px solid var(--line)}
   video, canvas#overlay{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transform:scaleX(-1)}
   .hint{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:10px; color:#8aa0b6; text-align:center; padding:20px; font-size:13.5px; line-height:1.6}
-  .vid-badge{position:absolute; top:8px; left:8px; background:rgba(6,18,31,.7); backdrop-filter:blur(4px);
-    border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-size:11.5px; line-height:1.5}
-  .vid-badge #vstatus{color:var(--orange-soft); font-weight:700; display:block}
-  .vid-badge #vtimer{font-family:var(--mono); color:#cdd9e6}
+  .vid-badge{position:absolute; top:8px; left:8px; background:rgba(6,18,31,.72); backdrop-filter:blur(4px);
+    border:1px solid var(--line); border-radius:12px; padding:6px 12px 8px}
+  .vid-badge #vstatus{display:block; font-size:11px; color:var(--orange-soft); font-weight:700; margin-bottom:1px}
+  .vid-badge #vtimer{font-family:var(--mono); font-size:34px; font-weight:700; line-height:1; color:#fff}
 
-  .controlrow{flex:0 0 auto; display:flex; gap:10px; align-items:stretch}
+  .controlrow{flex:0 0 auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .ctl-label{font-size:12.5px; color:#9fb3c8; font-weight:700; white-space:nowrap}
   select#dur{font-family:inherit; font-size:16px; font-weight:700; color:var(--paper);
-    background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:10px; padding:0 12px}
+    background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:10px; padding:9px 10px}
   select#dur:disabled{opacity:.5}
-  button#toggle{flex:1 1 auto; font-family:inherit; font-weight:800; font-size:16px; border:none; border-radius:10px;
-    padding:13px 18px; cursor:pointer; background:var(--orange); color:#1a1306; transition:.15s filter}
+  button#toggle{font-family:inherit; font-weight:800; font-size:15px; border:none; border-radius:10px;
+    padding:11px 26px; cursor:pointer; background:var(--orange); color:#1a1306}
   button#toggle.is-stop{background:#28425f; color:var(--paper)}
-  button#toggle:hover{filter:brightness(1.08)}
+  button#restart{margin-left:auto; font-family:inherit; font-weight:700; font-size:14px;
+    background:transparent; color:#cdd9e6; border:1px solid var(--line); border-radius:10px; padding:10px 16px; cursor:pointer}
 
-  /* indicators column */
-  .indicators{flex:0 0 auto; width:clamp(120px,34%,168px); display:flex; flex-direction:column; gap:10px; min-height:0}
+  .indicators{flex:0 0 auto; width:clamp(132px,36%,196px); display:flex; flex-direction:column; gap:10px; min-height:0}
   .ind{flex:1 1 0; min-height:0; background:rgba(255,255,255,.03); border:1px solid var(--line);
-    border-radius:14px; padding:8px 8px 6px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px}
-  .ind .ititle{font-size:11px; color:#9fb3c8; font-weight:700; letter-spacing:.3px}
-  .ind svg{width:100%; height:auto; max-height:90px}
-  .ind .ival{font-family:var(--mono); font-weight:700; line-height:1}
-  #rateNum{font-size:24px; color:var(--idle)}
-  .ind .small{font-size:10px; color:#7f93a8}
+    border-radius:14px; padding:6px 6px 4px; display:flex; flex-direction:column; align-items:center}
+  .ind.arm{flex:1.45 1 0}
+  .ind .ititle{font-size:13px; color:var(--paper); font-weight:700; letter-spacing:.3px}
+  .ind svg{flex:1 1 0; min-height:0; width:100%; height:100%; display:block}
+  .ind .ival{font-family:var(--mono); font-weight:700; line-height:1; font-size:22px; color:var(--idle)}
+  .ind .ival .u{font-size:11px; color:#7f93a8; font-family:var(--sans)}
 
-  /* results page */
-  .results-page{position:fixed; inset:0; background:var(--ink); z-index:50; display:none; overflow:auto; padding:24px 18px}
-  .results-page.show{display:block}
-  .rp-inner{max-width:560px; margin:0 auto}
-  .rp-inner h2{font-size:20px; margin-bottom:4px}
-  .rp-meta{font-size:13px; color:#9fb3c8; margin-bottom:14px}
-  .rgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
-  .rcard{background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:12px; padding:14px}
-  .rcard .rv{font-family:var(--mono); font-size:26px; font-weight:700}
-  .rcard .rl{font-size:11px; color:#9fb3c8; margin-top:4px}
-  .note{background:rgba(244,123,32,.08); border:1px solid rgba(244,123,32,.25); border-radius:10px;
-    padding:10px 12px; font-size:12.5px; color:#ffd0a3; margin-top:14px; line-height:1.6}
-  .btn-again{margin-top:16px; width:100%; font-family:inherit; font-weight:800; font-size:16px; border:none;
-    border-radius:10px; padding:14px; cursor:pointer; background:var(--orange); color:#1a1306}
+  /* RESULTS — one page */
+  .results-page{position:fixed; inset:0; background:var(--ink); z-index:50; display:none;
+    flex-direction:column; padding:16px 16px 18px; overflow:auto;
+    background-image:radial-gradient(900px 500px at 80% -10%, rgba(244,123,32,.10), transparent 60%);}
+  .results-page.show{display:flex}
+  .rp-head{flex:0 0 auto; text-align:center; margin-bottom:10px}
+  .rp-head h2{font-size:19px}
+  .rp-meta{font-size:12.5px; color:#9fb3c8; margin-top:3px}
+  .rcards{flex:1 1 auto; display:flex; gap:10px; min-height:0; align-items:stretch}
+  .rc{flex:1 1 0; background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:14px;
+    padding:12px 8px; display:flex; flex-direction:column; align-items:center; gap:4px}
+  .rc .rtitle{font-size:13px; color:#9fb3c8; font-weight:700; text-align:center}
+  .rc .racc{font-family:var(--mono); font-size:30px; font-weight:800; line-height:1}
+  .rc svg{flex:1 1 0; min-height:0; width:100%; max-height:150px; display:block}
+  .rc .rsub{font-size:12px; color:#9fb3c8}
+  .rc .rsub b{font-family:var(--mono); font-size:16px; color:var(--paper)}
+  .note{flex:0 0 auto; background:rgba(244,123,32,.08); border:1px solid rgba(244,123,32,.25);
+    border-radius:10px; padding:9px 12px; font-size:11.5px; color:#ffd0a3; margin-top:12px; line-height:1.55}
+  .btn-again{flex:0 0 auto; margin-top:12px; width:100%; font-family:inherit; font-weight:800; font-size:16px;
+    border:none; border-radius:10px; padding:13px; cursor:pointer; background:var(--orange); color:#1a1306}
 
-  @media(max-width:560px){ .topbar h1{font-size:14px} .topbar .tag{display:none} }
+  @media(max-width:560px){ .rcards{flex-wrap:wrap} .rc{flex:1 1 40%} }
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <span class="brand">SAVEANNE</span>
-  <h1>CPR 即時姿勢分析</h1>
-  <span class="tag">頻率・回彈・手臂｜深度未量測</span>
+  <h1>CPR即時品質分析</h1>
 </div>
 
 <!-- LIVE -->
@@ -90,54 +92,50 @@
       <canvas id="overlay"></canvas>
       <div class="vid-badge" id="badge" style="display:none">
         <span id="vstatus">準備</span>
-        <span id="vtimer">00:00 · 0 次</span>
+        <span id="vtimer">00:00</span>
       </div>
       <div class="hint" id="hint">
         <div style="font-size:30px">🎥</div>
-        <div>選好紀錄時間後按「開始」。<br>鏡頭放<b>安妮另一側、正面對施救者</b>，手機<b>建議橫放</b>，兩肘與雙手都看得到。<br>偵測到第一次按壓才開始計時。</div>
+        <div>選好紀錄時間後按「開始」。<br>鏡頭放<b>安妮另一側、正面對施救者</b>，手機<b>建議橫放</b>。<br>偵測到第一次按壓才開始計時。</div>
       </div>
     </div>
     <div class="controlrow">
+      <span class="ctl-label">紀錄時間</span>
       <select id="dur">
-        <option value="1">1 分</option>
-        <option value="2">2 分</option>
-        <option value="3">3 分</option>
-        <option value="5">5 分</option>
+        <option value="1">1 分鐘</option>
+        <option value="2">2 分鐘</option>
+        <option value="3">3 分鐘</option>
+        <option value="5">5 分鐘</option>
         <option value="0" selected>不限</option>
       </select>
       <button id="toggle">開始</button>
+      <button id="restart" style="display:none">重新開始</button>
     </div>
   </div>
 
   <div class="indicators">
-    <!-- SPEED gauge -->
     <div class="ind">
-      <div class="ititle">速度</div>
-      <svg viewBox="0 0 120 80" aria-label="速度指針">
+      <div class="ititle">按壓速度</div>
+      <svg viewBox="0 0 120 80">
         <path d="M14 66 A46 46 0 0 1 106 66" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="9" stroke-linecap="round"/>
-        <path d="M49.8 21.2 A46 46 0 0 1 70.2 21.2" fill="none" stroke="var(--good)" stroke-width="9" stroke-linecap="round"/>
-        <g id="needle" transform="rotate(0 60 66)">
-          <polygon points="60,24 56.5,64 63.5,64" fill="var(--orange)"/>
-        </g>
+        <path id="band" d="M49.8 21.2 A46 46 0 0 1 70.2 21.2" fill="none" stroke="var(--good)" stroke-width="9" stroke-linecap="round"/>
+        <g id="needle" transform="rotate(0 60 66)"><polygon points="60,24 56.5,64 63.5,64" fill="var(--orange)"/></g>
         <circle cx="60" cy="66" r="5" fill="var(--orange)"/>
       </svg>
-      <div class="ival"><span id="rateNum">--</span><span class="small"> /分</span></div>
+      <div class="ival"><span id="rateNum">--</span><span class="u"> /分</span></div>
     </div>
 
-    <!-- RECOIL diamond -->
     <div class="ind">
-      <div class="ititle">回彈</div>
-      <svg viewBox="0 0 64 64" aria-label="回彈菱形">
+      <div class="ititle">按壓回彈</div>
+      <svg viewBox="0 0 64 64">
         <polygon points="32,3 61,32 32,61 3,32" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2"/>
         <polygon id="recoilFill" points="32,3 61,32 32,61 3,32" fill="var(--warn)" transform="translate(32 32) scale(0)"/>
       </svg>
-      <div class="small">填滿＝完整回彈</div>
     </div>
 
-    <!-- ARM figure -->
-    <div class="ind">
-      <div class="ititle">手臂</div>
-      <svg viewBox="0 0 64 76" aria-label="手臂彎曲" stroke-linecap="round">
+    <div class="ind arm">
+      <div class="ititle">手臂彎曲</div>
+      <svg viewBox="0 0 64 76" stroke-linecap="round">
         <circle cx="32" cy="11" r="7" fill="none" stroke="var(--muted)" stroke-width="2.5"/>
         <line x1="32" y1="18" x2="32" y2="42" stroke="var(--muted)" stroke-width="3"/>
         <line x1="32" y1="42" x2="22" y2="60" stroke="var(--muted)" stroke-width="3"/>
@@ -145,8 +143,8 @@
         <rect x="9" y="62" width="46" height="3" rx="1.5" fill="#3a5170"/>
         <line id="armFigL" x1="32" y1="22" x2="17" y2="58" stroke="var(--idle)" stroke-width="3"/>
         <line id="armFigR" x1="32" y1="22" x2="47" y2="58" stroke="var(--idle)" stroke-width="3"/>
-        <circle cx="17" cy="58" r="2.5" fill="var(--idle)"/>
-        <circle cx="47" cy="58" r="2.5" fill="var(--idle)"/>
+        <circle cx="17" cy="58" r="2.6" fill="var(--idle)"/>
+        <circle cx="47" cy="58" r="2.6" fill="var(--idle)"/>
         <text x="13" y="74" font-size="8" fill="#9fb3c8" font-family="sans-serif">左</text>
         <text x="46" y="74" font-size="8" fill="#9fb3c8" font-family="sans-serif">右</text>
       </svg>
@@ -156,15 +154,52 @@
 
 <!-- RESULTS -->
 <div class="results-page" id="results">
-  <div class="rp-inner">
+  <div class="rp-head">
     <h2>練習報告</h2>
     <div class="rp-meta" id="repMeta"></div>
-    <div class="rgrid" id="rgrid"></div>
-    <div class="note">
-      <b>關於深度：</b>本工具未量測下壓深度（公分）。單一鏡頭無法可靠換算絕對深度，這裡的回彈為「相對」指標，僅供練習趨勢參考，不可作為認證級量測。需公分數據請搭配 Laerdal QCPR 等感測裝置。
-    </div>
-    <button class="btn-again" id="again">再測一次</button>
   </div>
+  <div class="rcards">
+    <div class="rc">
+      <div class="rtitle">速度正確率</div>
+      <div class="racc" id="rateAcc">--</div>
+      <svg viewBox="0 0 120 80">
+        <path d="M14 66 A46 46 0 0 1 106 66" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="9" stroke-linecap="round"/>
+        <path id="bandR" d="M49.8 21.2 A46 46 0 0 1 70.2 21.2" fill="none" stroke="var(--good)" stroke-width="9" stroke-linecap="round"/>
+        <g id="needleR" transform="rotate(0 60 66)"><polygon points="60,24 56.5,64 63.5,64" fill="var(--orange)"/></g>
+        <circle cx="60" cy="66" r="5" fill="var(--orange)"/>
+      </svg>
+      <div class="rsub">平均速度 <b id="meanRate">--</b> /分</div>
+    </div>
+    <div class="rc">
+      <div class="rtitle">回彈正確率</div>
+      <div class="racc" id="recoilAcc">--</div>
+      <svg viewBox="0 0 64 64">
+        <polygon points="32,3 61,32 32,61 3,32" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2"/>
+        <polygon id="recoilFillR" points="32,3 61,32 32,61 3,32" fill="var(--good)" transform="translate(32 32) scale(0)"/>
+      </svg>
+      <div class="rsub">填滿＝完整回彈</div>
+    </div>
+    <div class="rc">
+      <div class="rtitle">手臂打直率</div>
+      <div class="racc" id="armAcc">--</div>
+      <svg viewBox="0 0 64 76" stroke-linecap="round">
+        <circle cx="32" cy="11" r="7" fill="none" stroke="var(--muted)" stroke-width="2.5"/>
+        <line x1="32" y1="18" x2="32" y2="42" stroke="var(--muted)" stroke-width="3"/>
+        <line x1="32" y1="42" x2="22" y2="60" stroke="var(--muted)" stroke-width="3"/>
+        <line x1="32" y1="42" x2="42" y2="60" stroke="var(--muted)" stroke-width="3"/>
+        <rect x="9" y="62" width="46" height="3" rx="1.5" fill="#3a5170"/>
+        <line id="armFigLR" x1="32" y1="22" x2="17" y2="58" stroke="var(--good)" stroke-width="3"/>
+        <line id="armFigRR" x1="32" y1="22" x2="47" y2="58" stroke="var(--good)" stroke-width="3"/>
+        <circle cx="17" cy="58" r="2.6" fill="var(--muted)"/>
+        <circle cx="47" cy="58" r="2.6" fill="var(--muted)"/>
+      </svg>
+      <div class="rsub">綠＝打直　黃＝彎曲</div>
+    </div>
+  </div>
+  <div class="note">
+    <b>關於深度：</b>本工具未量測下壓深度（公分）。單一鏡頭無法可靠換算絕對深度，這裡的回彈為相對指標，僅供練習趨勢參考，不可作為認證級量測。需公分數據請搭配 Laerdal QCPR 等感測裝置。
+  </div>
+  <button class="btn-again" id="again">再測一次</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -173,21 +208,16 @@
 <script>
 (function(){
   const $ = id => document.getElementById(id);
-  const cam=$('cam'), overlay=$('overlay'), octx=overlay.getContext('2d');
-  const needle=$('needle'), recoilFill=$('recoilFill'), armFigL=$('armFigL'), armFigR=$('armFigR');
-  const toggle=$('toggle');
+  const cam=$('cam'), overlay=$('overlay'), octx=overlay.getContext('2d'), toggle=$('toggle');
 
-  // ---- constants ----
-  const WIN_MS=2500, MIN_AMP=0.015;
-  const ARM_STRAIGHT=160, ARM_BENT=150;
-  const RATE_LO=100, RATE_HI=120;
+  const WIN_MS=2500, MIN_AMP=0.015, ARM_STRAIGHT=160;
+  const GMIN=80, GMAX=160, BLO=100, BHI=120;         // 量程 80–160，綠色正確區 100–120
+  const GC=(GMIN+GMAX)/2, GH=(GMAX-GMIN)/2;          // 中心 120
 
-  // ---- state ----
   let running=false, cameraStarted=false, pose=null, camera=null, timerId=null;
   let durationMin=0, measureStartT=null;
   let sig=[], comps=[], log=[], state='up', releaseMinY=1;
 
-  // ---- helpers ----
   function angle(a,b,c){
     const v1={x:a.x-b.x,y:a.y-b.y}, v2={x:c.x-b.x,y:c.y-b.y};
     const dot=v1.x*v2.x+v1.y*v2.y, m=Math.hypot(v1.x,v1.y)*Math.hypot(v2.x,v2.y);
@@ -195,29 +225,30 @@
     return Math.acos(Math.max(-1,Math.min(1,dot/m)))*180/Math.PI;
   }
   const vis = lm => lm && lm.visibility>0.5;
+  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
   function fmt(sec){ sec=Math.max(0,Math.round(sec)); return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); }
 
-  // ---- indicator updates ----
-  function setNeedle(bpm){ const d=Math.max(-90,Math.min(90,((bpm-110)/70)*90)); needle.setAttribute('transform',`rotate(${d} 60 66)`); }
+  function rotateNeedle(el,bpm){ el.setAttribute('transform',`rotate(${clamp(((bpm-GC)/GH)*90,-90,90)} 60 66)`); }
+  function dialPoint(bpm){ const p=clamp((bpm-GMIN)/(GMAX-GMIN),0,1), th=(180-p*180)*Math.PI/180; return [60+46*Math.cos(th),66-46*Math.sin(th)]; }
+  function bandPath(){ const a=dialPoint(BLO), b=dialPoint(BHI); return `M ${a[0].toFixed(1)} ${a[1].toFixed(1)} A 46 46 0 0 1 ${b[0].toFixed(1)} ${b[1].toFixed(1)}`; }
+  function fillDiamond(el,f){ f=clamp(f,0,1); el.setAttribute('transform',`translate(${32-32*f} ${32-32*f}) scale(${f})`); }
+  function armColor(a){ if(a==null) return 'var(--idle)'; return a>=ARM_STRAIGHT?'var(--good)':'var(--warn)'; }
+
   function setRate(bpm){
-    const el=$('rateNum');
-    if(bpm==null){ el.textContent='--'; el.style.color='var(--idle)'; setNeedle(110); return; }
-    el.textContent=bpm; setNeedle(bpm);
-    el.style.color = (bpm>=RATE_LO&&bpm<=RATE_HI)?'var(--good)':((bpm>=80&&bpm<=140)?'var(--warn)':'var(--bad)');
+    const num=$('rateNum'), band=$('band');
+    if(bpm==null){ num.textContent='--'; num.style.color='var(--idle)'; rotateNeedle($('needle'),GC); band.setAttribute('stroke','var(--good)'); return; }
+    num.textContent=bpm; rotateNeedle($('needle'),bpm);
+    const ok=bpm>=BLO&&bpm<=BHI;
+    num.style.color = ok?'var(--good)':'var(--warn)';
+    band.setAttribute('stroke', ok?'var(--good)':'var(--warn)');
   }
-  function setRecoilFill(f){
-    f=Math.max(0,Math.min(1,f));
-    recoilFill.setAttribute('transform',`translate(${32-32*f} ${32-32*f}) scale(${f})`);
-    recoilFill.setAttribute('fill', f>=0.85?'var(--good)':'var(--warn)');
-  }
-  function armColor(a){ if(a==null) return 'var(--idle)'; if(a>=ARM_STRAIGHT) return 'var(--muted)'; if(a>=ARM_BENT) return 'var(--warn)'; return 'var(--bad)'; }
+  function setRecoilFill(f){ const el=$('recoilFill'); fillDiamond(el,f); el.setAttribute('fill', f>=0.85?'var(--good)':'var(--warn)'); }
   function setArms(aL,aR){
-    armFigL.setAttribute('stroke',armColor(aL)); armFigR.setAttribute('stroke',armColor(aR));
-    armFigL.setAttribute('stroke-width', (aL!=null&&aL<ARM_BENT)?5:3);
-    armFigR.setAttribute('stroke-width', (aR!=null&&aR<ARM_BENT)?5:3);
+    $('armFigL').setAttribute('stroke',armColor(aL)); $('armFigR').setAttribute('stroke',armColor(aR));
+    $('armFigL').setAttribute('stroke-width',(aL!=null&&aL<ARM_STRAIGHT)?5:3);
+    $('armFigR').setAttribute('stroke-width',(aR!=null&&aR<ARM_STRAIGHT)?5:3);
   }
 
-  // ---- per-frame analysis ----
   function onResults(res){
     octx.clearRect(0,0,overlay.width,overlay.height);
     if(!res.poseLandmarks) return;
@@ -229,14 +260,12 @@
     if(!running) return;
     const now=performance.now();
 
-    // arms
     const aL=(vis(L[11])&&vis(L[13])&&vis(L[15]))?angle(L[11],L[13],L[15]):null;
     const aR=(vis(L[12])&&vis(L[14])&&vis(L[16]))?angle(L[12],L[14],L[16]):null;
     setArms(aL,aR);
     let armOK=null; const av=[aL,aR].filter(v=>v!=null);
     if(av.length) armOK=Math.min(...av)>=ARM_STRAIGHT;
 
-    // wrist signal
     const wr=[]; if(vis(L[15]))wr.push(L[15].y); if(vis(L[16]))wr.push(L[16].y);
     if(!wr.length) return;
     const y=wr.reduce((a,b)=>a+b,0)/wr.length;
@@ -244,13 +273,10 @@
 
     let rMin=1,rMax=0; for(const p of sig){ if(p.y<rMin)rMin=p.y; if(p.y>rMax)rMax=p.y; }
     const amp=rMax-rMin;
-
     if(amp<MIN_AMP){
       if(comps.length && now-comps[comps.length-1].t>WIN_MS) setRate(null);
-      releaseMinY=Math.min(releaseMinY,y);
-      return;
+      releaseMinY=Math.min(releaseMinY,y); return;
     }
-    // live recoil fill (hand up = fill out)
     setRecoilFill((rMax-y)/(rMax-rMin));
 
     const mid=(rMin+rMax)/2, band=amp*0.18, hi=mid+band, lo=mid-band;
@@ -260,12 +286,11 @@
         state='down'; comps.push({t:now});
         if(measureStartT===null){ measureStartT=now; $('vstatus').textContent='計時中'; }
         const rec=(rMax-rMin)>0?(rMax-releaseMinY)/(rMax-rMin):0;
-        log.push({t:now, armOK, recoil:Math.max(0,Math.min(1,rec))});
+        log.push({t:now, armOK, recoil:clamp(rec,0,1)});
         releaseMinY=1;
       }
     } else if(y<lo) state='up';
 
-    // rate
     const recent=comps.filter(c=>now-c.t<=4000);
     if(recent.length>=3){
       const iv=[]; for(let i=1;i<recent.length;i++) iv.push(recent[i].t-recent[i-1].t);
@@ -274,69 +299,56 @@
     }
   }
 
-  // ---- timer ----
   function tick(){
     if(measureStartT===null) return;
     const elapsed=(performance.now()-measureStartT)/1000;
     if(durationMin>0){
       const rem=durationMin*60-elapsed;
-      $('vtimer').textContent=fmt(Math.ceil(rem))+' · '+comps.length+' 次';
+      $('vtimer').textContent=fmt(Math.ceil(rem));
       if(rem<=0){ $('vstatus').textContent='時間到'; endSession(); }
-    } else {
-      $('vtimer').textContent=fmt(Math.floor(elapsed))+' · '+comps.length+' 次';
-    }
+    } else $('vtimer').textContent=fmt(Math.floor(elapsed));
   }
 
-  // ---- lifecycle ----
   async function initCamera(){
     if(typeof Pose==='undefined'){ $('hint').innerHTML='⚠️ 無法載入 MediaPipe（網路或 CDN 被擋）。請以 https / localhost 開啟後重試。'; return false; }
     pose=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
     pose.setOptions({modelComplexity:1,smoothLandmarks:true,minDetectionConfidence:.5,minTrackingConfidence:.5});
     pose.onResults(onResults);
-    try{
-      camera=new Camera(cam,{onFrame:async()=>{await pose.send({image:cam});},width:1280,height:720});
-      await camera.start();
-    }catch(e){ $('hint').innerHTML='⚠️ 無法開啟鏡頭。請允許相機權限，並確認以 https 或 localhost 開啟。'; return false; }
+    try{ camera=new Camera(cam,{onFrame:async()=>{await pose.send({image:cam});},width:1280,height:720}); await camera.start(); }
+    catch(e){ $('hint').innerHTML='⚠️ 無法開啟鏡頭。請允許相機權限，並確認以 https 或 localhost 開啟。'; return false; }
     cam.addEventListener('loadedmetadata',()=>{overlay.width=cam.videoWidth;overlay.height=cam.videoHeight;});
     overlay.width=cam.videoWidth||1280; overlay.height=cam.videoHeight||720;
-    cameraStarted=true; $('hint').style.display='none'; $('badge').style.display='block';
-    return true;
+    cameraStarted=true; $('hint').style.display='none'; $('badge').style.display='block'; return true;
   }
 
-  function presetBadge(){
-    $('vstatus').textContent='等待第一次按壓…';
-    $('vtimer').textContent=(durationMin>0?fmt(durationMin*60):'00:00')+' · 0 次';
-  }
+  function presetBadge(){ $('vstatus').textContent='等待第一次按壓…'; $('vtimer').textContent=durationMin>0?fmt(durationMin*60):'00:00'; }
+  function resetState(){ sig=[];comps=[];log=[];state='up';releaseMinY=1;measureStartT=null; setRate(null); setRecoilFill(0); setArms(null,null); presetBadge(); }
 
   async function startSession(){
     if(!cameraStarted){ const ok=await initCamera(); if(!ok) return; }
-    sig=[]; comps=[]; log=[]; state='up'; releaseMinY=1; measureStartT=null;
-    setRate(null); setRecoilFill(0); setArms(null,null);
-    presetBadge();
-    running=true;
-    toggle.textContent='結束'; toggle.classList.add('is-stop');
-    $('dur').disabled=true;
+    resetState(); running=true;
+    toggle.textContent='停止'; toggle.classList.add('is-stop');
+    $('restart').style.display=''; $('dur').disabled=true;
     timerId=setInterval(tick,250);
   }
-
+  function restartSession(){ resetState(); }   // discard & re-record, no results
   function endSession(){
     if(!running) return;
     running=false; clearInterval(timerId);
     toggle.textContent='開始'; toggle.classList.remove('is-stop');
-    $('dur').disabled=false;
-    buildReport();
-    $('results').classList.add('show');
+    $('restart').style.display='none'; $('dur').disabled=false;
+    buildReport(); $('results').classList.add('show');
   }
 
   function buildReport(){
     let dur = measureStartT!=null ? (performance.now()-measureStartT)/1000 : 0;
     if(durationMin>0) dur=Math.min(dur, durationMin*60);
     const n=comps.length;
-    let meanRate='—', inBand='—';
+    let meanRate=null, inBand=null;
     if(n>=2){
       const inst=[]; for(let i=1;i<comps.length;i++) inst.push(60000/(comps[i].t-comps[i-1].t));
       meanRate=Math.round(inst.reduce((a,b)=>a+b,0)/inst.length);
-      inBand=Math.round(inst.filter(r=>r>=RATE_LO&&r<=RATE_HI).length/inst.length*100)+'%';
+      inBand=Math.round(inst.filter(r=>r>=BLO&&r<=BHI).length/inst.length*100);
     }
     const armLog=log.filter(l=>l.armOK!=null);
     const armPct=armLog.length?Math.round(armLog.filter(l=>l.armOK).length/armLog.length*100):null;
@@ -344,18 +356,29 @@
 
     $('repMeta').textContent = n===0 ? '本次未偵測到按壓，未開始計時。'
       : `時長 ${Math.floor(dur/60)} 分 ${Math.round(dur%60)} 秒　·　共 ${n} 次下壓`;
-    $('rgrid').innerHTML=[
-      ['平均頻率', meanRate==='—'?'—':meanRate+' /分'],
-      ['落在 100–120 比例', inBand],
-      ['手臂打直比例', armPct==null?'—':armPct+'%'],
-      ['平均回彈率', recAvg==null?'—':recAvg+'%'],
-    ].map(([l,v])=>`<div class="rcard"><div class="rv">${v}</div><div class="rl">${l}</div></div>`).join('');
+
+    // speed gauge
+    $('rateAcc').textContent = inBand==null?'--':inBand+'%';
+    $('rateAcc').style.color = inBand==null?'var(--idle)':(inBand>=80?'var(--good)':'var(--warn)');
+    $('meanRate').textContent = meanRate==null?'--':meanRate;
+    rotateNeedle($('needleR'), meanRate==null?GC:meanRate);
+    // recoil diamond
+    $('recoilAcc').textContent = recAvg==null?'--':recAvg+'%';
+    $('recoilAcc').style.color = recAvg==null?'var(--idle)':(recAvg>=85?'var(--good)':'var(--warn)');
+    fillDiamond($('recoilFillR'), recAvg==null?0:recAvg/100);
+    $('recoilFillR').setAttribute('fill', (recAvg!=null&&recAvg>=85)?'var(--good)':'var(--warn)');
+    // arm figure
+    $('armAcc').textContent = armPct==null?'--':armPct+'%';
+    $('armAcc').style.color = armPct==null?'var(--idle)':(armPct>=80?'var(--good)':'var(--warn)');
+    const ac = armPct==null?'var(--idle)':(armPct>=80?'var(--good)':'var(--warn)');
+    $('armFigLR').setAttribute('stroke',ac); $('armFigRR').setAttribute('stroke',ac);
   }
 
-  // ---- wiring ----
   $('dur').addEventListener('change',e=>{ durationMin=parseInt(e.target.value,10)||0; if(cameraStarted&&!running) presetBadge(); });
-  toggle.addEventListener('click',()=>{ running ? endSession() : startSession(); });
+  toggle.addEventListener('click',()=>{ running?endSession():startSession(); });
+  $('restart').addEventListener('click',restartSession);
   $('again').addEventListener('click',()=>{ $('results').classList.remove('show'); presetBadge(); });
+  $('band').setAttribute('d',bandPath()); $('bandR').setAttribute('d',bandPath());
   setRate(null);
 })();
 </script>
