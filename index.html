@@ -20,7 +20,7 @@
   .topbar h1{font-size:15px; font-weight:800; color:var(--brand)}
 
   .live{flex:1 1 auto; display:flex; gap:12px; padding:12px 16px; min-height:0}
-  .leftcol{flex:0 0 clamp(190px,30%,330px); display:flex; flex-direction:column; gap:10px; min-width:0}
+  .leftcol{flex:0 0 clamp(160px,21%,280px); display:flex; flex-direction:column; gap:10px; min-width:0}
   .videowrap{flex:1 1 auto; position:relative; border-radius:14px; overflow:hidden; background:#e7edf2; min-height:0; border:1px solid var(--line)}
   video, canvas#overlay{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
   .hint{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -51,12 +51,9 @@
   button#restart{margin-left:auto; font-family:inherit; font-weight:700; font-size:14px;
     background:#fff; color:var(--brand); border:1px solid var(--brand); border-radius:10px; padding:10px 16px; cursor:pointer; display:none}
 
-  .indpanel{flex:1 1 auto; display:flex; flex-direction:column; gap:10px; min-height:0; min-width:0}
-  .indtop{flex:1.5 1 0; display:flex; gap:10px; min-height:0}
-  .ind{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:8px 8px 6px;
+  .indpanel{flex:1 1 auto; display:flex; gap:10px; min-height:0; min-width:0}
+  .ind{flex:1 1 0; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:6px 6px 4px;
     display:flex; flex-direction:column; align-items:center; min-height:0; min-width:0}
-  .indtop .ind{flex:1 1 0}
-  .ind.arm{flex:1 1 0}
   .ind .ititle{font-size:14px; color:var(--brand); font-weight:800; letter-spacing:.3px}
   .ind svg{flex:1 1 0; min-height:0; width:100%; height:100%; display:block}
   .ind .ival{font-family:var(--mono); font-weight:700; line-height:1; font-size:24px; color:var(--idle)}
@@ -94,7 +91,8 @@
     .live{flex-wrap:wrap; overflow:auto}
     .leftcol{flex:1 1 100%}
     .videowrap{aspect-ratio:16/10}
-    .indpanel{flex:1 1 100%}
+    .indpanel{flex:1 1 100%; flex-wrap:wrap}
+    .ind{flex:1 1 44%; min-height:150px}
     .rcards{flex-wrap:wrap} .rc{flex:1 1 40%}
   }
 </style>
@@ -141,7 +139,6 @@
   </div>
 
   <div class="indpanel">
-    <div class="indtop">
       <div class="ind">
         <div class="ititle">按壓速度</div>
         <svg viewBox="0 0 120 80">
@@ -159,7 +156,6 @@
           <polygon id="recoilFill" points="32,3 61,32 32,61 3,32" fill="var(--warn)" transform="translate(32 32) scale(0)"/>
         </svg>
       </div>
-    </div>
     <div class="ind arm">
       <div class="ititle">手臂彎曲</div>
       <svg viewBox="0 0 84 82" stroke-linecap="round" stroke-linejoin="round">
