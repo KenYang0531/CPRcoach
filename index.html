@@ -16,7 +16,7 @@
   html,body{height:100%}
   body{background:var(--bg); color:var(--ink); font-family:var(--sans); overflow:hidden; display:flex; flex-direction:column}
   .topbar{flex:0 0 auto; display:flex; align-items:center; gap:12px; padding:8px 16px; border-bottom:1px solid var(--line)}
-  .logo{height:30px; width:auto; display:block}
+  .logo{height:24px; width:auto; display:block}
   .topbar h1{font-size:15px; font-weight:800; color:var(--brand)}
 
   .live{flex:1 1 auto; display:flex; gap:12px; padding:12px 16px; min-height:0}
@@ -25,11 +25,11 @@
   video, canvas#overlay{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
   .hint{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:10px; color:var(--ink); text-align:center; padding:16px; font-size:13.5px; line-height:1.6; background:#fff}
-  .guideimg{width:min(86%,300px); height:auto; border-radius:10px}
+  .guideimg{max-width:80%; max-height:56%; width:auto; height:auto; border-radius:10px}
   .vid-badge{position:absolute; top:8px; left:8px; background:rgba(20,40,58,.72); backdrop-filter:blur(4px); border-radius:12px; padding:5px 12px 7px}
   .vid-badge #vstatus{display:block; font-size:11px; color:#bcd3e6; font-weight:700; margin-bottom:1px}
   .vid-badge #vtimer{font-family:var(--mono); font-size:34px; font-weight:700; line-height:1; color:#fff}
-  .cam-switch{position:absolute; top:8px; right:8px; width:42px; height:42px; border-radius:50%;
+  .cam-switch{position:absolute; bottom:8px; right:8px; width:42px; height:42px; border-radius:50%;
     border:none; background:rgba(20,40,58,.72); backdrop-filter:blur(4px); color:#e3edf4; cursor:pointer;
     display:none; align-items:center; justify-content:center; padding:0}
   .cam-switch.show{display:flex}
@@ -172,8 +172,6 @@
         <circle cx="39" cy="64" r="4.5" fill="var(--muted)"/>
         <circle cx="45" cy="64" r="4.5" fill="var(--muted)"/>
         <rect x="18" y="70" width="48" height="3.5" rx="1.75" fill="#cdd8e1"/>
-        <text x="18" y="81" font-size="9" fill="#8aa0b3" font-family="sans-serif">右</text>
-        <text x="58" y="81" font-size="9" fill="#8aa0b3" font-family="sans-serif">左</text>
       </svg>
     </div>
   </div>
@@ -239,13 +237,15 @@
   const cam=$('cam'), overlay=$('overlay'), octx=overlay.getContext('2d'), toggle=$('toggle');
   const ICON_STOP='<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/></svg>';
 
-  const WIN_MS=2500, MIN_AMP=0.015, ARM_STRAIGHT=160;
+  const WIN_MS=2500, MIN_AMP=0.02, ARM_STRAIGHT=160;
+  const POSTURE_HOLD_MS=500, P_TOGETHER=0.55, P_BELOW=0.40, P_CENTER=0.60;
   const GMIN=80, GMAX=140, BLO=100, BHI=120, GC=(GMIN+GMAX)/2, GH=(GMAX-GMIN)/2;
   const RECOIL_PASS=0.90, RATE_AVG_N=4, CAL_MS=3000;
   const RHYTHM_N=3, RHYTHM_LO=250, RHYTHM_HI=1000;   // 需連續規律按壓才開始，避免走位誤觸發
 
   let running=false, cameraStarted=false, pose=null, camera=null, timerId=null;
-  let durationMin=1, measureStartT=null, facing='user', lastPoseT=0, armed=false;
+  let durationMin=1, measureStartT=null, facing='user', armed=false;
+  let postureSinceT=null, lastPostureT=0;
   let sig=[], comps=[], state='up', releaseMinY=1;
   let armLog=[], rateLog=[], recoilLog=[], series=[], calTop=1, calBottom=0;
 
@@ -261,6 +261,16 @@
   function segPath(lo,hi){ const a=dialPoint(lo), b=dialPoint(hi); return `M ${a[0].toFixed(1)} ${a[1].toFixed(1)} A 46 46 0 0 1 ${b[0].toFixed(1)} ${b[1].toFixed(1)}`; }
   function fillDiamond(el,f){ f=clamp(f,0,1); el.setAttribute('transform',`translate(${32-32*f} ${32-32*f}) scale(${f})`); }
   function armColor(a){ if(a==null) return 'var(--idle)'; return a>=ARM_STRAIGHT?'var(--good)':'var(--warn)'; }
+  function checkPosture(L){   // 倒三角按壓姿勢：雙手靠攏、在肩膀下方、置於身體中線
+    if(!(vis(L[11])&&vis(L[12])&&vis(L[15])&&vis(L[16]))) return false;
+    const sw=Math.abs(L[11].x-L[12].x); if(sw<0.05) return false;
+    const shY=(L[11].y+L[12].y)/2, shMidX=(L[11].x+L[12].x)/2;
+    const wSep=Math.abs(L[15].x-L[16].x), wMidX=(L[15].x+L[16].x)/2, wMidY=(L[15].y+L[16].y)/2;
+    if(wSep > P_TOGETHER*sw) return false;
+    if((wMidY-shY) < P_BELOW*sw) return false;
+    if(Math.abs(wMidX-shMidX) > P_CENTER*sw) return false;
+    return true;
+  }
 
   function setRate(bpm){
     const num=$('rateNum'), unit=$('rateUnit'), wrap=$('needleWrap'), bl=$('bandLeft'), br=$('bandRight');
@@ -273,17 +283,18 @@
     br.setAttribute('stroke', fast?'var(--warn)':'var(--track)');
   }
   function setRecoilFill(f){ const el=$('recoilFill'); fillDiamond(el,f); el.setAttribute('fill', f>=RECOIL_PASS?'var(--good)':'var(--warn)'); }
-  function setArms(aL,aR){   // 畫面左=操作者右手(aR)，畫面右=操作者左手(aL)
-    $('armFigL').setAttribute('stroke',armColor(aR)); $('armFigR').setAttribute('stroke',armColor(aL));
-    $('armFigL').setAttribute('stroke-width',(aR!=null&&aR<ARM_STRAIGHT)?11:8);
-    $('armFigR').setAttribute('stroke-width',(aL!=null&&aL<ARM_STRAIGHT)?11:8);
+  function setArms(aL,aR){   // 圖示對齊畫面：畫面右側的手＝圖示右臂（前鏡頭鏡像、後鏡頭不鏡像皆正確）
+    const mir = facing==='user';
+    const rA = mir ? aR : aL, lA = mir ? aL : aR;
+    $('armFigR').setAttribute('stroke',armColor(rA)); $('armFigL').setAttribute('stroke',armColor(lA));
+    $('armFigR').setAttribute('stroke-width',(rA!=null&&rA<ARM_STRAIGHT)?11:8);
+    $('armFigL').setAttribute('stroke-width',(lA!=null&&lA<ARM_STRAIGHT)?11:8);
   }
 
   function onResults(res){
     octx.clearRect(0,0,overlay.width,overlay.height);
     const now=performance.now();
     if(!res.poseLandmarks) return;
-    lastPoseT=now; $('warn').classList.remove('show');
     const L=res.poseLandmarks;
     if(window.drawConnectors && window.POSE_CONNECTIONS){
       drawConnectors(octx,L,POSE_CONNECTIONS,{color:'rgba(255,255,255,.6)',lineWidth:2});
@@ -295,6 +306,12 @@
     const aR=(vis(L[12])&&vis(L[14])&&vis(L[16]))?angle(L[12],L[14],L[16]):null;
     setArms(aL,aR);
     let armOK=null; const av=[aL,aR].filter(v=>v!=null); if(av.length) armOK=Math.min(...av)>=ARM_STRAIGHT;
+
+    const post=checkPosture(L);
+    if(post) lastPostureT=now;
+    if(!post){ if(!armed) comps=[]; sig=[]; postureSinceT=null; setRate(null); return; }
+    if(postureSinceT===null) postureSinceT=now;
+    if(now-postureSinceT < POSTURE_HOLD_MS) return;
 
     const wr=[]; if(vis(L[15]))wr.push(L[15].y); if(vis(L[16]))wr.push(L[16].y);
     if(!wr.length) return;
@@ -335,7 +352,7 @@
 
   function tick(){
     const now=performance.now();
-    if(running && now-lastPoseT>1200) $('warn').classList.add('show');
+    $('warn').classList.toggle('show', running && (now-lastPostureT>800));
     if(measureStartT===null) return;
     const elapsed=(now-measureStartT)/1000;
     if(durationMin>0){ const rem=durationMin*60-elapsed; $('vtimer').textContent=fmt(Math.ceil(rem)); if(rem<=0){ $('vstatus').textContent='時間到'; endSession(); } }
@@ -358,12 +375,12 @@
     try{ await applyCamera(); }
     catch(e){ $('hint').innerHTML='⚠️ 無法開啟鏡頭。請允許相機權限，並確認以 https 或 localhost 開啟。'; return false; }
     overlay.width=cam.videoWidth||1280; overlay.height=cam.videoHeight||720;
-    cameraStarted=true; lastPoseT=performance.now(); $('hint').style.display='none'; $('badge').style.display='block'; $('camswitch').classList.add('show'); return true;
+    cameraStarted=true; $('hint').style.display='none'; $('badge').style.display='block'; $('camswitch').classList.add('show'); return true;
   }
   async function toggleCamera(){ const prev=facing; facing=facing==='user'?'environment':'user'; if(!cameraStarted) return; try{ await applyCamera(); }catch(e){ facing=prev; try{ await applyCamera(); }catch(_){} } }
 
   function presetBadge(){ $('vstatus').textContent='等待開始按壓…'; $('vtimer').textContent=durationMin>0?fmt(durationMin*60):'00:00'; }
-  function resetState(){ sig=[];comps=[];armLog=[];rateLog=[];recoilLog=[];series=[];state='up';releaseMinY=1;measureStartT=null;armed=false;calTop=1;calBottom=0;
+  function resetState(){ sig=[];comps=[];armLog=[];rateLog=[];recoilLog=[];series=[];state='up';releaseMinY=1;measureStartT=null;armed=false;calTop=1;calBottom=0;postureSinceT=null;lastPostureT=0;
     setRate(null); setRecoilFill(0); setArms(null,null); $('warn').classList.remove('show'); presetBadge(); }
 
   async function startSession(){
