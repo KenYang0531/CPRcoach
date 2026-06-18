@@ -8,7 +8,7 @@
   :root{
     --brand:#37668a; --brand-d:#2b5170;
     --ink:#22323f; --bg:#ffffff; --card:#f5f7f9; --line:#dde4ea; --muted:#9bb0c0;
-    --good:#2e9e63; --warn:#e0a400; --idle:#c2cdd6;
+    --good:#2e9e63; --warn:#ef8b1f; --idle:#c2cdd6; --track:#e3e9ee;
     --mono:"SFMono-Regular",Consolas,Menlo,monospace;
     --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
   }
@@ -26,8 +26,7 @@
   .hint{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:10px; color:var(--ink); text-align:center; padding:16px; font-size:13.5px; line-height:1.6; background:#fff}
   .guideimg{width:min(86%,300px); height:auto; border-radius:10px}
-  .vid-badge{position:absolute; top:8px; left:8px; background:rgba(20,40,58,.72); backdrop-filter:blur(4px);
-    border-radius:12px; padding:5px 12px 7px}
+  .vid-badge{position:absolute; top:8px; left:8px; background:rgba(20,40,58,.72); backdrop-filter:blur(4px); border-radius:12px; padding:5px 12px 7px}
   .vid-badge #vstatus{display:block; font-size:11px; color:#bcd3e6; font-weight:700; margin-bottom:1px}
   .vid-badge #vtimer{font-family:var(--mono); font-size:34px; font-weight:700; line-height:1; color:#fff}
   .cam-switch{position:absolute; top:8px; right:8px; width:42px; height:42px; border-radius:50%;
@@ -36,8 +35,7 @@
   .cam-switch.show{display:flex}
   .cam-switch svg{width:22px; height:22px}
   .warn{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); display:none;
-    background:rgba(55,102,138,.94); color:#fff; font-weight:700; font-size:14px; padding:12px 18px;
-    border-radius:12px; text-align:center; max-width:80%}
+    background:rgba(239,139,31,.95); color:#fff; font-weight:800; font-size:14px; padding:12px 18px; border-radius:12px; text-align:center; max-width:84%}
   .warn.show{display:block}
 
   .controlrow{flex:0 0 auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap}
@@ -47,9 +45,11 @@
   select#dur:disabled{opacity:.5}
   button#toggle{font-family:inherit; font-weight:800; font-size:15px; border:none; border-radius:10px;
     padding:11px 26px; cursor:pointer; background:var(--brand); color:#fff}
-  button#toggle.is-stop{background:#7e93a3}
-  button#restart{margin-left:auto; font-family:inherit; font-weight:700; font-size:14px;
-    background:#fff; color:var(--brand); border:1px solid var(--brand); border-radius:10px; padding:10px 16px; cursor:pointer; display:none}
+  button#toggle.is-stop{background:#7e93a3; padding:0; width:52px; height:46px; display:inline-flex; align-items:center; justify-content:center}
+  button#toggle.is-stop svg{width:20px; height:20px; color:#fff}
+  button#restart{margin-left:auto; display:none; padding:0; width:52px; height:46px; align-items:center; justify-content:center;
+    background:#fff; color:var(--brand); border:1px solid var(--brand); border-radius:10px; cursor:pointer}
+  button#restart svg{width:22px; height:22px}
 
   .indpanel{flex:1 1 auto; display:flex; gap:10px; min-height:0; min-width:0}
   .ind{flex:1 1 0; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:6px 6px 4px;
@@ -68,8 +68,7 @@
   .rcards{flex:1 1 auto; display:flex; gap:10px; min-height:0; align-items:stretch}
   .rc{flex:1 1 0; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 8px;
     display:flex; flex-direction:column; align-items:center; gap:4px; min-height:0}
-  .rc.tap{cursor:pointer; position:relative}
-  .rc.tap::after{content:"點我看分佈"; position:absolute; bottom:6px; right:8px; font-size:10px; color:var(--brand)}
+  .rc.tap{cursor:pointer}
   .rc .rtitle{font-size:14px; color:var(--brand); font-weight:800; text-align:center}
   .rc .racc{font-family:var(--mono); font-size:30px; font-weight:800; line-height:1}
   .rc svg{flex:1 1 0; min-height:0; width:100%; max-height:160px; display:block}
@@ -78,7 +77,6 @@
   .btn-again{flex:0 0 auto; margin-top:14px; width:100%; font-family:inherit; font-weight:800; font-size:16px;
     border:none; border-radius:10px; padding:13px; cursor:pointer; background:var(--brand); color:#fff}
 
-  /* chart modal */
   .chart-modal{position:fixed; inset:0; background:rgba(20,40,58,.45); z-index:60; display:none; align-items:center; justify-content:center; padding:18px}
   .chart-modal.show{display:flex}
   .cm-inner{background:#fff; border-radius:14px; width:min(560px,100%); padding:14px 16px 18px; box-shadow:0 18px 50px rgba(0,0,0,.25)}
@@ -134,41 +132,48 @@
         <option value="0">不限</option>
       </select>
       <button id="toggle">開始</button>
-      <button id="restart">重新開始</button>
+      <button id="restart" title="重新開始" aria-label="重新開始">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </svg>
+      </button>
     </div>
   </div>
 
   <div class="indpanel">
-      <div class="ind">
-        <div class="ititle">按壓速度</div>
-        <svg viewBox="0 0 120 80">
-          <path d="M14 66 A46 46 0 0 1 106 66" fill="none" stroke="#e3e9ee" stroke-width="9" stroke-linecap="round"/>
-          <path id="band" d="M49.8 21.2 A46 46 0 0 1 70.2 21.2" fill="none" stroke="var(--good)" stroke-width="9" stroke-linecap="round"/>
-          <g id="needle" transform="rotate(0 60 66)"><polygon points="60,24 56.5,64 63.5,64" fill="var(--brand)"/></g>
-          <circle cx="60" cy="66" r="5" fill="var(--brand)"/>
-        </svg>
-        <div class="ival"><span id="rateNum">--</span><span class="u"> /分</span></div>
-      </div>
-      <div class="ind">
-        <div class="ititle">按壓回彈</div>
-        <svg viewBox="0 0 64 64">
-          <polygon points="32,3 61,32 32,61 3,32" fill="none" stroke="#cdd8e1" stroke-width="2"/>
-          <polygon id="recoilFill" points="32,3 61,32 32,61 3,32" fill="var(--warn)" transform="translate(32 32) scale(0)"/>
-        </svg>
-      </div>
+    <div class="ind">
+      <div class="ititle">按壓速度</div>
+      <svg viewBox="0 0 120 80">
+        <path id="bandLeft" fill="none" stroke="var(--track)" stroke-width="13"/>
+        <path id="bandRight" fill="none" stroke="var(--track)" stroke-width="13"/>
+        <path id="band" fill="none" stroke="var(--good)" stroke-width="13"/>
+        <g id="needleWrap" visibility="hidden">
+          <g id="needle" transform="rotate(0 60 66)"><polygon points="60,19 53,64 67,64" fill="var(--brand)"/></g>
+          <circle cx="60" cy="66" r="7" fill="var(--brand)"/>
+        </g>
+      </svg>
+      <div class="ival"><span id="rateNum"></span><span class="u" id="rateUnit"></span></div>
+    </div>
+    <div class="ind">
+      <div class="ititle">按壓回彈</div>
+      <svg viewBox="0 0 64 64">
+        <polygon points="32,2 62,32 32,62 2,32" fill="none" stroke="#cdd8e1" stroke-width="4"/>
+        <polygon id="recoilFill" points="32,2 62,32 32,62 2,32" fill="var(--warn)" transform="translate(32 32) scale(0)"/>
+      </svg>
+    </div>
     <div class="ind arm">
       <div class="ititle">手臂彎曲</div>
       <svg viewBox="0 0 84 82" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="42" cy="12" r="8" fill="none" stroke="var(--muted)" stroke-width="2.5"/>
-        <line x1="42" y1="20" x2="42" y2="30" stroke="var(--muted)" stroke-width="2.5"/>
-        <line x1="24" y1="30" x2="60" y2="30" stroke="var(--muted)" stroke-width="3"/>
-        <line id="armFigL" x1="24" y1="30" x2="42" y2="64" stroke="var(--idle)" stroke-width="4"/>
-        <line id="armFigR" x1="60" y1="30" x2="42" y2="64" stroke="var(--idle)" stroke-width="4"/>
-        <circle cx="40" cy="64" r="3.4" fill="var(--muted)"/>
-        <circle cx="44" cy="64" r="3.4" fill="var(--muted)"/>
-        <rect x="20" y="69" width="44" height="3" rx="1.5" fill="#cdd8e1"/>
-        <text x="20" y="80" font-size="8.5" fill="#8aa0b3" font-family="sans-serif">右</text>
-        <text x="58" y="80" font-size="8.5" fill="#8aa0b3" font-family="sans-serif">左</text>
+        <circle cx="42" cy="12" r="9" fill="none" stroke="var(--muted)" stroke-width="4"/>
+        <line x1="42" y1="21" x2="42" y2="31" stroke="var(--muted)" stroke-width="4"/>
+        <line x1="22" y1="31" x2="62" y2="31" stroke="var(--muted)" stroke-width="5"/>
+        <line id="armFigL" x1="22" y1="31" x2="42" y2="64" stroke="var(--idle)" stroke-width="8"/>
+        <line id="armFigR" x1="62" y1="31" x2="42" y2="64" stroke="var(--idle)" stroke-width="8"/>
+        <circle cx="39" cy="64" r="4.5" fill="var(--muted)"/>
+        <circle cx="45" cy="64" r="4.5" fill="var(--muted)"/>
+        <rect x="18" y="70" width="48" height="3.5" rx="1.75" fill="#cdd8e1"/>
+        <text x="18" y="81" font-size="9" fill="#8aa0b3" font-family="sans-serif">右</text>
+        <text x="58" y="81" font-size="9" fill="#8aa0b3" font-family="sans-serif">左</text>
       </svg>
     </div>
   </div>
@@ -182,10 +187,13 @@
       <div class="rtitle">速度正確率</div>
       <div class="racc" id="rateAcc">--</div>
       <svg viewBox="0 0 120 80">
-        <path d="M14 66 A46 46 0 0 1 106 66" fill="none" stroke="#e3e9ee" stroke-width="9" stroke-linecap="round"/>
-        <path id="bandR" d="M49.8 21.2 A46 46 0 0 1 70.2 21.2" fill="none" stroke="var(--good)" stroke-width="9" stroke-linecap="round"/>
-        <g id="needleR" transform="rotate(0 60 66)"><polygon points="60,24 56.5,64 63.5,64" fill="var(--brand)"/></g>
-        <circle cx="60" cy="66" r="5" fill="var(--brand)"/>
+        <path id="bandLeftR" fill="none" stroke="var(--track)" stroke-width="13"/>
+        <path id="bandRightR" fill="none" stroke="var(--track)" stroke-width="13"/>
+        <path id="bandR" fill="none" stroke="var(--good)" stroke-width="13"/>
+        <g id="needleWrapR" visibility="hidden">
+          <g id="needleR" transform="rotate(0 60 66)"><polygon points="60,19 53,64 67,64" fill="var(--brand)"/></g>
+          <circle cx="60" cy="66" r="7" fill="var(--brand)"/>
+        </g>
       </svg>
       <div class="rsub">平均速度 <b id="meanRate">--</b> /分</div>
     </div>
@@ -193,31 +201,28 @@
       <div class="rtitle">回彈正確率</div>
       <div class="racc" id="recoilAcc">--</div>
       <svg viewBox="0 0 64 64">
-        <polygon points="32,3 61,32 32,61 3,32" fill="none" stroke="#cdd8e1" stroke-width="2"/>
-        <polygon id="recoilFillR" points="32,3 61,32 32,61 3,32" fill="var(--good)" transform="translate(32 32) scale(0)"/>
+        <polygon points="32,2 62,32 32,62 2,32" fill="none" stroke="#cdd8e1" stroke-width="4"/>
+        <polygon id="recoilFillR" points="32,2 62,32 32,62 2,32" fill="var(--good)" transform="translate(32 32) scale(0)"/>
       </svg>
-      <div class="rsub">回到頂點 90% 以上算完整</div>
     </div>
     <div class="rc">
       <div class="rtitle">手臂打直率</div>
       <div class="racc" id="armAcc">--</div>
       <svg viewBox="0 0 84 82" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="42" cy="12" r="8" fill="none" stroke="var(--muted)" stroke-width="2.5"/>
-        <line x1="42" y1="20" x2="42" y2="30" stroke="var(--muted)" stroke-width="2.5"/>
-        <line x1="24" y1="30" x2="60" y2="30" stroke="var(--muted)" stroke-width="3"/>
-        <line id="armFigLR" x1="24" y1="30" x2="42" y2="64" stroke="var(--good)" stroke-width="4"/>
-        <line id="armFigRR" x1="60" y1="30" x2="42" y2="64" stroke="var(--good)" stroke-width="4"/>
-        <circle cx="40" cy="64" r="3.4" fill="var(--muted)"/>
-        <circle cx="44" cy="64" r="3.4" fill="var(--muted)"/>
-        <rect x="20" y="69" width="44" height="3" rx="1.5" fill="#cdd8e1"/>
+        <circle cx="42" cy="12" r="9" fill="none" stroke="var(--muted)" stroke-width="4"/>
+        <line x1="42" y1="21" x2="42" y2="31" stroke="var(--muted)" stroke-width="4"/>
+        <line x1="22" y1="31" x2="62" y2="31" stroke="var(--muted)" stroke-width="5"/>
+        <line id="armFigLR" x1="22" y1="31" x2="42" y2="64" stroke="var(--good)" stroke-width="8"/>
+        <line id="armFigRR" x1="62" y1="31" x2="42" y2="64" stroke="var(--good)" stroke-width="8"/>
+        <circle cx="39" cy="64" r="4.5" fill="var(--muted)"/>
+        <circle cx="45" cy="64" r="4.5" fill="var(--muted)"/>
+        <rect x="18" y="70" width="48" height="3.5" rx="1.75" fill="#cdd8e1"/>
       </svg>
-      <div class="rsub">兩肘 ≥160° 算打直</div>
     </div>
   </div>
   <button class="btn-again" id="again">再測一次</button>
 </div>
 
-<!-- chart modal -->
 <div class="chart-modal" id="chartModal">
   <div class="cm-inner">
     <div class="cm-head"><b>按壓速度分佈</b><button id="chartClose">✕</button></div>
@@ -232,13 +237,15 @@
 (function(){
   const $ = id => document.getElementById(id);
   const cam=$('cam'), overlay=$('overlay'), octx=overlay.getContext('2d'), toggle=$('toggle');
+  const ICON_STOP='<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2.5" fill="currentColor"/></svg>';
 
   const WIN_MS=2500, MIN_AMP=0.015, ARM_STRAIGHT=160;
   const GMIN=80, GMAX=140, BLO=100, BHI=120, GC=(GMIN+GMAX)/2, GH=(GMAX-GMIN)/2;
-  const RECOIL_PASS=0.90, RATE_AVG_N=4;
+  const RECOIL_PASS=0.90, RATE_AVG_N=4, CAL_MS=3000;
+  const RHYTHM_N=3, RHYTHM_LO=250, RHYTHM_HI=1000;   // 需連續規律按壓才開始，避免走位誤觸發
 
   let running=false, cameraStarted=false, pose=null, camera=null, timerId=null;
-  let durationMin=1, measureStartT=null, facing='user', lastPoseT=0;
+  let durationMin=1, measureStartT=null, facing='user', lastPoseT=0, armed=false;
   let sig=[], comps=[], state='up', releaseMinY=1;
   let armLog=[], rateLog=[], recoilLog=[], series=[], calTop=1, calBottom=0;
 
@@ -251,22 +258,25 @@
 
   function rotateNeedle(el,bpm){ el.setAttribute('transform',`rotate(${clamp(((bpm-GC)/GH)*90,-90,90)} 60 66)`); }
   function dialPoint(bpm){ const p=clamp((bpm-GMIN)/(GMAX-GMIN),0,1), th=(180-p*180)*Math.PI/180; return [60+46*Math.cos(th),66-46*Math.sin(th)]; }
-  function bandPath(){ const a=dialPoint(BLO), b=dialPoint(BHI); return `M ${a[0].toFixed(1)} ${a[1].toFixed(1)} A 46 46 0 0 1 ${b[0].toFixed(1)} ${b[1].toFixed(1)}`; }
+  function segPath(lo,hi){ const a=dialPoint(lo), b=dialPoint(hi); return `M ${a[0].toFixed(1)} ${a[1].toFixed(1)} A 46 46 0 0 1 ${b[0].toFixed(1)} ${b[1].toFixed(1)}`; }
   function fillDiamond(el,f){ f=clamp(f,0,1); el.setAttribute('transform',`translate(${32-32*f} ${32-32*f}) scale(${f})`); }
   function armColor(a){ if(a==null) return 'var(--idle)'; return a>=ARM_STRAIGHT?'var(--good)':'var(--warn)'; }
 
   function setRate(bpm){
-    const num=$('rateNum'), band=$('band');
-    if(bpm==null){ num.textContent='--'; num.style.color='var(--idle)'; rotateNeedle($('needle'),GC); band.setAttribute('stroke','var(--good)'); return; }
-    num.textContent=bpm; rotateNeedle($('needle'),bpm);
-    const ok=bpm>=BLO&&bpm<=BHI;
-    num.style.color = ok?'var(--good)':'var(--warn)'; band.setAttribute('stroke', ok?'var(--good)':'var(--warn)');
+    const num=$('rateNum'), unit=$('rateUnit'), wrap=$('needleWrap'), bl=$('bandLeft'), br=$('bandRight');
+    if(bpm==null){ num.textContent=''; unit.textContent=''; num.style.color='var(--idle)'; wrap.setAttribute('visibility','hidden');
+      bl.setAttribute('stroke','var(--track)'); br.setAttribute('stroke','var(--track)'); return; }
+    num.textContent=bpm; unit.textContent=' /分'; rotateNeedle($('needle'),bpm); wrap.setAttribute('visibility','visible');
+    const slow=bpm<BLO, fast=bpm>BHI;
+    num.style.color = (slow||fast)?'var(--warn)':'var(--good)';
+    bl.setAttribute('stroke', slow?'var(--warn)':'var(--track)');
+    br.setAttribute('stroke', fast?'var(--warn)':'var(--track)');
   }
   function setRecoilFill(f){ const el=$('recoilFill'); fillDiamond(el,f); el.setAttribute('fill', f>=RECOIL_PASS?'var(--good)':'var(--warn)'); }
   function setArms(aL,aR){   // 畫面左=操作者右手(aR)，畫面右=操作者左手(aL)
     $('armFigL').setAttribute('stroke',armColor(aR)); $('armFigR').setAttribute('stroke',armColor(aL));
-    $('armFigL').setAttribute('stroke-width',(aR!=null&&aR<ARM_STRAIGHT)?6:4);
-    $('armFigR').setAttribute('stroke-width',(aL!=null&&aL<ARM_STRAIGHT)?6:4);
+    $('armFigL').setAttribute('stroke-width',(aR!=null&&aR<ARM_STRAIGHT)?11:8);
+    $('armFigR').setAttribute('stroke-width',(aL!=null&&aL<ARM_STRAIGHT)?11:8);
   }
 
   function onResults(res){
@@ -284,8 +294,7 @@
     const aL=(vis(L[11])&&vis(L[13])&&vis(L[15]))?angle(L[11],L[13],L[15]):null;
     const aR=(vis(L[12])&&vis(L[14])&&vis(L[16]))?angle(L[12],L[14],L[16]):null;
     setArms(aL,aR);
-    let armOK=null; const av=[aL,aR].filter(v=>v!=null);
-    if(av.length) armOK=Math.min(...av)>=ARM_STRAIGHT;
+    let armOK=null; const av=[aL,aR].filter(v=>v!=null); if(av.length) armOK=Math.min(...av)>=ARM_STRAIGHT;
 
     const wr=[]; if(vis(L[15]))wr.push(L[15].y); if(vis(L[16]))wr.push(L[16].y);
     if(!wr.length) return;
@@ -293,12 +302,11 @@
     sig.push({t:now,y}); while(sig.length && now-sig[0].t>WIN_MS) sig.shift();
     let rMin=1,rMax=0; for(const p of sig){ if(p.y<rMin)rMin=p.y; if(p.y>rMax)rMax=p.y; }
     const amp=rMax-rMin;
-    if(amp<MIN_AMP){ if(comps.length && now-comps[comps.length-1].t>WIN_MS) setRate(null); releaseMinY=Math.min(releaseMinY,y); return; }
+    if(amp<MIN_AMP){ if(armed && comps.length && now-comps[comps.length-1].t>WIN_MS) setRate(null); releaseMinY=Math.min(releaseMinY,y); return; }
 
-    // calibration of top/bottom from first 4 compressions
-    if(comps.length<4){ calTop=Math.min(calTop,y); calBottom=Math.max(calBottom,y); }
-    const useCal = comps.length>=4 && (calBottom-calTop)>0;
-    const top = useCal?calTop:rMin, bottom = useCal?calBottom:rMax;
+    if(armed && measureStartT!=null && now-measureStartT<CAL_MS){ calTop=Math.min(calTop,y); calBottom=Math.max(calBottom,y); }
+    const useCal = armed && measureStartT!=null && (now-measureStartT)>=CAL_MS && (calBottom-calTop)>0;
+    const top=useCal?calTop:rMin, bottom=useCal?calBottom:rMax;
     setRecoilFill((bottom-y)/(bottom-top));
 
     const mid=(rMin+rMax)/2, band=amp*0.18, hi=mid+band, lo=mid-band;
@@ -306,18 +314,19 @@
       releaseMinY=Math.min(releaseMinY,y);
       if(y>hi){
         state='down'; comps.push({t:now});
-        if(measureStartT===null){ measureStartT=now; $('vstatus').textContent='計時中'; }
-        armLog.push(armOK);
-        // rate: average of last up-to-4 compressions
-        if(comps.length>=2){
-          const k=Math.min(RATE_AVG_N, comps.length), seg=comps.slice(-k);
-          const span=seg[seg.length-1].t-seg[0].t;
-          if(span>0){ const bpm=Math.round(60000*(k-1)/span); setRate(bpm); rateLog.push(bpm); series.push({t:(now-measureStartT)/1000, bpm}); }
+        if(!armed){
+          const n=comps.length;
+          if(n>=RHYTHM_N){
+            let ok=true;
+            for(let i=0;i<RHYTHM_N-1;i++){ const g=comps[n-1-i].t-comps[n-2-i].t; if(g<RHYTHM_LO||g>RHYTHM_HI){ok=false;break;} }
+            if(ok){ armed=true; comps=comps.slice(n-RHYTHM_N); measureStartT=comps[0].t; calTop=1; calBottom=0; $('vstatus').textContent='計時中'; }
+          }
         }
-        // recoil pass/fail after calibration
-        if(comps.length>4 && (calBottom-calTop)>0){
-          const frac=(calBottom-releaseMinY)/(calBottom-calTop);
-          recoilLog.push(frac>=RECOIL_PASS);
+        if(armed){
+          armLog.push(armOK);
+          if(comps.length>=2){ const k=Math.min(RATE_AVG_N,comps.length), seg=comps.slice(-k), span=seg[seg.length-1].t-seg[0].t;
+            if(span>0){ const bpm=Math.round(60000*(k-1)/span); setRate(bpm); rateLog.push(bpm); series.push({t:(now-measureStartT)/1000, bpm}); } }
+          if(useCal){ const frac=(calBottom-releaseMinY)/(calBottom-calTop); recoilLog.push(frac>=RECOIL_PASS); }
         }
         releaseMinY=1;
       }
@@ -353,15 +362,15 @@
   }
   async function toggleCamera(){ const prev=facing; facing=facing==='user'?'environment':'user'; if(!cameraStarted) return; try{ await applyCamera(); }catch(e){ facing=prev; try{ await applyCamera(); }catch(_){} } }
 
-  function presetBadge(){ $('vstatus').textContent='等待第一次按壓…'; $('vtimer').textContent=durationMin>0?fmt(durationMin*60):'00:00'; }
-  function resetState(){ sig=[];comps=[];armLog=[];rateLog=[];recoilLog=[];series=[];state='up';releaseMinY=1;measureStartT=null;calTop=1;calBottom=0;
+  function presetBadge(){ $('vstatus').textContent='等待開始按壓…'; $('vtimer').textContent=durationMin>0?fmt(durationMin*60):'00:00'; }
+  function resetState(){ sig=[];comps=[];armLog=[];rateLog=[];recoilLog=[];series=[];state='up';releaseMinY=1;measureStartT=null;armed=false;calTop=1;calBottom=0;
     setRate(null); setRecoilFill(0); setArms(null,null); $('warn').classList.remove('show'); presetBadge(); }
 
   async function startSession(){
     if(!cameraStarted){ const ok=await initCamera(); if(!ok) return; }
     resetState(); running=true;
-    toggle.textContent='停止'; toggle.classList.add('is-stop');
-    $('restart').style.display=''; $('dur').disabled=true;
+    toggle.innerHTML=ICON_STOP; toggle.classList.add('is-stop');
+    $('restart').style.display='inline-flex'; $('dur').disabled=true;
     timerId=setInterval(tick,250);
   }
   function restartSession(){ resetState(); }
@@ -383,9 +392,12 @@
     const armPct=aLg.length?Math.round(aLg.filter(Boolean).length/aLg.length*100):null;
     const recPct=recoilLog.length?Math.round(recoilLog.filter(Boolean).length/recoilLog.length*100):null;
 
-    $('repMeta').textContent = n===0 ? '本次未偵測到按壓，未開始計時。' : `時長 ${Math.floor(dur/60)} 分 ${Math.round(dur%60)} 秒　·　共 ${n} 次下壓`;
+    $('repMeta').textContent = n===0 ? '本次未偵測到規律按壓。' : `時長 ${Math.floor(dur/60)} 分 ${Math.round(dur%60)} 秒　·　共 ${n} 次下壓`;
     $('rateAcc').textContent = inBand==null?'--':inBand+'%'; $('rateAcc').style.color = inBand==null?'var(--idle)':(inBand>=80?'var(--good)':'var(--warn)');
-    $('meanRate').textContent = meanRate==null?'--':meanRate; rotateNeedle($('needleR'), meanRate==null?GC:meanRate);
+    $('meanRate').textContent = meanRate==null?'--':meanRate;
+    if(meanRate==null){ $('needleWrapR').setAttribute('visibility','hidden'); }
+    else { $('needleWrapR').setAttribute('visibility','visible'); rotateNeedle($('needleR'),meanRate);
+      $('bandLeftR').setAttribute('stroke', meanRate<BLO?'var(--warn)':'var(--track)'); $('bandRightR').setAttribute('stroke', meanRate>BHI?'var(--warn)':'var(--track)'); }
     $('recoilAcc').textContent = recPct==null?'--':recPct+'%'; $('recoilAcc').style.color = recPct==null?'var(--idle)':(recPct>=90?'var(--good)':'var(--warn)');
     fillDiamond($('recoilFillR'), recPct==null?0:recPct/100); $('recoilFillR').setAttribute('fill',(recPct!=null&&recPct>=90)?'var(--good)':'var(--warn)');
     $('armAcc').textContent = armPct==null?'--':armPct+'%'; $('armAcc').style.color = armPct==null?'var(--idle)':(armPct>=80?'var(--good)':'var(--warn)');
@@ -396,8 +408,7 @@
   function drawChart(){
     const c=$('rateChart'), dpr=window.devicePixelRatio||1, W=c.clientWidth, H=c.clientHeight;
     c.width=W*dpr; c.height=H*dpr; const x=c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,W,H);
-    const padL=40,padR=12,padT=10,padB=24, plotW=W-padL-padR, plotH=H-padT-padB;
-    x.font='10px sans-serif';
+    const padL=40,padR=12,padT=10,padB=24, plotW=W-padL-padR, plotH=H-padT-padB; x.font='10px sans-serif';
     if(series.length<2){ x.fillStyle='#9bb0c0'; x.fillText('資料不足',padL,padT+20); return; }
     const tMax=Math.max(1, series[series.length-1].t), yMin=60, yMax=160;
     const sx=t=>padL+(t/tMax)*plotW, sy=b=>padT+(1-(clamp(b,yMin,yMax)-yMin)/(yMax-yMin))*plotH;
@@ -418,7 +429,7 @@
   $('rcSpeed').addEventListener('click',()=>{ $('chartModal').classList.add('show'); drawChart(); });
   $('chartClose').addEventListener('click',()=>$('chartModal').classList.remove('show'));
   $('chartModal').addEventListener('click',e=>{ if(e.target===$('chartModal')) $('chartModal').classList.remove('show'); });
-  $('band').setAttribute('d',bandPath()); $('bandR').setAttribute('d',bandPath());
+  ['','R'].forEach(s=>{ $('bandLeft'+s).setAttribute('d',segPath(GMIN,BLO)); $('band'+s).setAttribute('d',segPath(BLO,BHI)); $('bandRight'+s).setAttribute('d',segPath(BHI,GMAX)); });
   setRate(null);
 })();
 </script>
