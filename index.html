@@ -479,15 +479,18 @@
   $('rcSpeed').addEventListener('click',()=>{ $('chartModal').classList.add('show'); drawChart(); });
   $('chartClose').addEventListener('click',()=>$('chartModal').classList.remove('show'));
   $('chartModal').addEventListener('click',e=>{ if(e.target===$('chartModal')) $('chartModal').classList.remove('show'); });
+  const GAS_URL='https://script.google.com/macros/s/AKfycby520jxIIki_xad3PiOF1KOQ_iSB-tQ9uxXOeGqUrUR4KOg0vqAe9rIVa4V-oo2xrxm/exec';
   $('fbOpen').addEventListener('click',()=>$('fbModal').classList.add('show'));
   $('fbCancel').addEventListener('click',()=>{$('fbModal').classList.remove('show');$('fbText').value='';});
   $('fbModal').addEventListener('click',e=>{if(e.target===$('fbModal')){$('fbModal').classList.remove('show');$('fbText').value='';}});
-  $('fbSend').addEventListener('click',()=>{
+  $('fbSend').addEventListener('click',async()=>{
     const t=$('fbText').value.trim(); if(!t){alert('請輸入意見內容');return;}
-    const subj=encodeURIComponent('CPR即時品質分析 意見回饋');
-    const body=encodeURIComponent(t+'\n\n---\n'+new Date().toLocaleString('zh-TW'));
-    window.open('mailto:saveme@anne.education?subject='+subj+'&body='+body,'_blank');
-    $('fbModal').classList.remove('show'); $('fbText').value='';
+    $('fbSend').disabled=true; $('fbSend').textContent='送出中…';
+    try{
+      await fetch(GAS_URL,{method:'POST',body:JSON.stringify({message:t,time:new Date().toLocaleString('zh-TW')}),mode:'no-cors'});
+      alert('感謝您的意見！'); $('fbText').value=''; $('fbModal').classList.remove('show');
+    }catch(e){ alert('送出失敗，請稍後再試。'); }
+    $('fbSend').disabled=false; $('fbSend').textContent='送出';
   });
   $('hint').addEventListener('click',ensureCamera);
   ['','R'].forEach(s=>{ $('bandLeft'+s).setAttribute('d',segPath(GMIN,BLO)); $('band'+s).setAttribute('d',segPath(BLO,BHI)); $('bandRight'+s).setAttribute('d',segPath(BHI,GMAX)); });
